@@ -1,0 +1,65 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 30
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters 'x86', 'armeabi-v7a', 'arm64-v8a'
+        }
+
+        externalNativeBuild {
+            cmake {
+                abiFilters 'x86', 'armeabi-v7a', 'arm64-v8a'
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path 'src/main/cpp/CMakeLists.txt'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    testImplementation 'junit:junit:4.13.1'
+    api 'androidx.appcompat:appcompat:1.2.0'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+    //Android 文件下载引擎，稳定、高效、灵活、简单易用的框架
+    api 'com.liulishuo.filedownloader:library:1.7.7'
+}
+
+apply plugin: 'maven'
+uploadArchives {
+    repositories.mavenDeployer {
+        //gradlew uploadArchives通过此指令打包
+        // 本地仓库路径D:\WorkSpace
+//        repository(url: uri('../repository'))
+        repository(url: "file://D://silentupgrade/")
+        // 唯一标识
+        pom.groupId = "com.zhilai.update"
+        // 项目名称
+        pom.artifactId = "silentupgrade"
+        // 版本号
+        pom.version = "1.0.6"
+    }
+}

@@ -1,0 +1,18 @@
+<resources>
+
+    <string name="app_name">静默升级</string>
+    <string name="app_up_data">正在更新...</string>
+    <string name="cancel">取消</string>
+    <string name="ok">确定</string>
+    <string name="loading">请稍候...</string>
+
+    <string name="tipmsg" formatted="false">
+        目前手机不是WiFi状态 \n
+        确认是否继续下载更新？
+    </string>
+    <string name="accessibility_tip">自动安装服务,请保持开启</string>
+    <string name="accessibility_service_description">应用自动安装服务,请保持开启</string>
+    <string name="text_install_complete">安装完成</string>
+    <string name="text_install_start">开始安装</string>
+
+</resources>
