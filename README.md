@@ -25,7 +25,7 @@ GitHub地址：https://github.com/zhuyuhao121/SilentUpgrade
 
 ## 接口介绍
 
-# 打开无障碍服务界面
+### 打开无障碍服务界面
 
 
 ``` java
@@ -46,7 +46,7 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 }
 ```
 
-# 下载App并安装
+### 下载App并安装
 
 root模式安装：AutoInstaller.MODE.ROOT_ONLY
 
