@@ -1,12 +1,7 @@
-1 项目介绍
+## 项目介绍
 
 App升级在开发过程中是必不可少的，为了大家方便集成以及统一管理，我将App升级功能封装成了一个仓库，大家只要在项目中添加依赖就可以直接使用
 Apk下载下来后，程序会自动安装并重启，重启的我已经在仓库里加上了，所以大家在调用的时候，就不需要再做重启的处理，安装成功后，会将apk文件删除掉，Android高版本的需要通过FileProvider来安装，这些我也处理了，所以大家只需要添加依赖，并调用下面提供的接口即可，其他都不需要处理，如果在测试的时候发现bug可以给我反馈，我会尽快更改
-
-2其他项目如何引用
-
-2.1 添加maven仓库
-根目录的build.gradle中添加maven仓库，本地仓库和远程仓库根据需要自行选择，如果你只是对接人，那就直接依赖远程仓库，如果是仓库的打包者，那就先使用本地仓库进行测试，在本地仓库使用没问题的情况下，将aar上传到远程仓库，供其他开发者调用，本地仓库以及远程仓库的创建可参考《ZL-KF-110601人脸支付终端使用手册V1.0.4_20190627》
 
 ## 依赖添加
 在你的项目根目录下的build.gradle文件中加入依赖
@@ -25,37 +20,40 @@ dependencies {
 }
 ```
 
-2.2 GitHub地址：
-https://github.com/zhuyuhao121/SilentUpgrade
+GitHub地址：https://github.com/zhuyuhao121/SilentUpgrade
 
 
-3 接口介绍
-3.1打开无障碍服务界面
+## 接口介绍
+
+# 打开无障碍服务界面
 
 
 ``` java
 /**
-     * 打开无障碍服务界面
-     */
-    private void silenceAutoInstall() {
-        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-        startActivityForResult(intent, 1);
-    }
+ * 打开无障碍服务界面
+ */
+private void silenceAutoInstall() {
+    Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+    startActivityForResult(intent, 1);
+}
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (Utils.isAccessibilitySettingsOn(MainActivity.this)) {
-            download(url, AutoInstaller.MODE.AUTO_ONLY);
-        }
+@Override
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    if (Utils.isAccessibilitySettingsOn(MainActivity.this)) {
+        download(url, AutoInstaller.MODE.AUTO_ONLY);
     }
+}
 ```
 
-3.2下载App并安装
+# 下载App并安装
 
 root模式安装：AutoInstaller.MODE.ROOT_ONLY
+
 系统签名模式安装：AutoInstaller.MODE.SYSTEM_SIGN_ONLY
+
 手机可选择无障碍模式或者普通模式安装：AutoInstaller.MODE.AUTO_ONLY，AutoInstaller.MODE.GENERAL_INSTALL
+
 如果选择root模式安装的话，程序判断工控机没有root权限会自动调普通安装接口
 
 ``` java
@@ -106,15 +104,15 @@ private void download(String url, AutoInstaller.MODE mode){
 }
 ```
 
-差分包制作方式：
+## 差分包制作方式：
 
 将差分工具包放到某个文件夹下，在当前目录打开cmd，然后执行下面命令，注意：一定要在差分工具包的目录下打开cmd
 
 生成差分包： bsdiff oldfile newfile patchfile
+
 合成：bspatch oldfile 合成后的输出文件 patchfile
 
-如：bsdiff 1.apk 2.apk patch
-对比版本1与版本2的apk，生成差分包patch
+如：bsdiff 1.apk 2.apk patch（对比版本1与版本2的apk，生成差分包patch）
 
-bspatch 1.apk 2.apk patch
-使用差分包patch与1.apk合并，生成2.apk
+bspatch 1.apk 2.apk patch（使用差分包patch与1.apk合并，生成2.apk）
+
