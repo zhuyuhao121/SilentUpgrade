@@ -194,101 +194,101 @@ public class AutoInstaller extends Handler {
 //        return true;
 //    }
 
-//    /**
-//     * 系统签名安装
-//     *
-//     * @param filePath 安装包路径
-//     */
-//    private void installSystemSign(String filePath) {
-//        if (TextUtils.isEmpty(filePath)) {
-//            throw new IllegalArgumentException("Please check apk file path!");
-//        }
-//
-//        String[] commands = new String[3];
-//
-//        commands[1] = "sleep 10";
-//
-//        Intent launchIntent = Utils.getLaunchIntent(mContext);
-//        if (launchIntent != null) {
-//            commands[2] = "am start -n " + launchIntent.getPackage()
-//                    + "/" + launchIntent.getComponent().getClassName();
-//        }
-//
-//        CommandUtil.debug("Build.VERSION.SDK_INT = " + Build.VERSION.SDK_INT);
-//
-//        if (Build.VERSION.SDK_INT >= 24) {
-//            if (Looper.myLooper() != Looper.getMainLooper()) {
-//                throw new IllegalArgumentException("Please call in main thread");
-//            }
-//            //android7.0以上使用以下命令行，且只能在主线程调用安装
-//            StringBuilder sb = new StringBuilder();
-//            sb.append("pm install ");
-//            sb.append(" -r ");
-//            sb.append(" -i ");
-//            sb.append(mContext.getPackageName());
-//            sb.append(" --user 0 ");
-//            sb.append(" ");
-//            sb.append(filePath);
-//            commands[0] = sb.toString();
-//
-//            CommandUtil.execute(commands[0]);
-//
-//        } else {
-//            commands[0] = "pm install -r " + filePath;
-//            boolean result = false;
-//            //只安装,目前不支持安装后启动应用
-//            List<String> msgList = CommandUtil.execute(commands[0]);
-//            if (msgList.size() > 0 && !msgList.get(0).toLowerCase().contains("Failure")) {
-//                result = true;
-//            }
-//        }
-//        CommandUtil.debug("installSystemSign commands = " + Arrays.asList(commands));
-//    }
-
     /**
      * 系统签名安装
      *
      * @param filePath 安装包路径
-     *                 这里的“r”指的是“replace”，替换原来的应用；“-d”指的是“downgrade”，降级安装
      */
-    public void installSystemSign(String filePath) {
-        String cmd = "";
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            cmd = "pm install -r -d " + filePath;
+    private void installSystemSign(String filePath) {
+        if (TextUtils.isEmpty(filePath)) {
+            throw new IllegalArgumentException("Please check apk file path!");
+        }
+
+        String[] commands = new String[3];
+
+        commands[1] = "sleep 10";
+
+        Intent launchIntent = Utils.getLaunchIntent(mContext);
+        if (launchIntent != null) {
+            commands[2] = "am start -n " + launchIntent.getPackage()
+                    + "/" + launchIntent.getComponent().getClassName();
+        }
+
+        CommandUtil.debug("Build.VERSION.SDK_INT = " + Build.VERSION.SDK_INT);
+
+        if (Build.VERSION.SDK_INT >= 24) {
+            if (Looper.myLooper() != Looper.getMainLooper()) {
+                throw new IllegalArgumentException("Please call in main thread");
+            }
+            //android7.0以上使用以下命令行，且只能在主线程调用安装
+            StringBuilder sb = new StringBuilder();
+            sb.append("pm install ");
+            sb.append(" -r ");
+            sb.append(" -i ");
+            sb.append(mContext.getPackageName());
+            sb.append(" --user 0 ");
+            sb.append(" ");
+            sb.append(filePath);
+            commands[0] = sb.toString();
+
+            CommandUtil.execute(commands[0]);
+
         } else {
-            cmd = "pm install -r -d -i packageName --user 0 " + filePath;
+            commands[0] = "pm install -r " + filePath;
+            boolean result = false;
+            //只安装,目前不支持安装后启动应用
+            List<String> msgList = CommandUtil.execute(commands[0]);
+            if (msgList.size() > 0 && !msgList.get(0).toLowerCase().contains("Failure")) {
+                result = true;
+            }
         }
-        Runtime runtime = Runtime.getRuntime();
-        try {
-            Process process = runtime.exec(cmd);
-            InputStream errorInput = process.getErrorStream();
-            InputStream inputStream = process.getInputStream();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            StringBuilder error = new StringBuilder();
-            StringBuilder result = new StringBuilder();
-            String line = "";
-            while ((line = bufferedReader.readLine()) != null) {
-                result.append(line);
-            }
-            bufferedReader = new BufferedReader(new InputStreamReader(errorInput));
-            while ((line = bufferedReader.readLine()) != null) {
-                error.append(line);
-            }
-            if (result.toString().equals("Success")) {
-                if (mContext != null) {
-                    ToastUtil.setToastMsg(mContext, "安装成功");
-                }
-                Log.i(TAG, "install: Success");
-            } else {
-                if (mContext != null) {
-                    ToastUtil.setToastMsg(mContext, "安装失败");
-                }
-                Log.i(TAG, "install: error" + error);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        CommandUtil.debug("installSystemSign commands = " + Arrays.asList(commands));
     }
+
+//    /**
+//     * 系统签名安装
+//     *
+//     * @param filePath 安装包路径
+//     *                 这里的“r”指的是“replace”，替换原来的应用；“-d”指的是“downgrade”，降级安装
+//     */
+//    public void installSystemSign(String filePath) {
+//        String cmd = "";
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+//            cmd = "pm install -r -d " + filePath;
+//        } else {
+//            cmd = "pm install -r -d -i packageName --user 0 " + filePath;
+//        }
+//        Runtime runtime = Runtime.getRuntime();
+//        try {
+//            Process process = runtime.exec(cmd);
+//            InputStream errorInput = process.getErrorStream();
+//            InputStream inputStream = process.getInputStream();
+//            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+//            StringBuilder error = new StringBuilder();
+//            StringBuilder result = new StringBuilder();
+//            String line = "";
+//            while ((line = bufferedReader.readLine()) != null) {
+//                result.append(line);
+//            }
+//            bufferedReader = new BufferedReader(new InputStreamReader(errorInput));
+//            while ((line = bufferedReader.readLine()) != null) {
+//                error.append(line);
+//            }
+//            if (result.toString().equals("Success")) {
+//                if (mContext != null) {
+//                    ToastUtil.setToastMsg(mContext, "安装成功");
+//                }
+//                Log.i(TAG, "install: Success");
+//            } else {
+//                if (mContext != null) {
+//                    ToastUtil.setToastMsg(mContext, "安装失败");
+//                }
+//                Log.i(TAG, "install: error" + error);
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
 //    /**
 //     * 使用辅助功能安装
