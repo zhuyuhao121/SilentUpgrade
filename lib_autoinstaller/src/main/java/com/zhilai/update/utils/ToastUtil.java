@@ -1,5 +1,6 @@
 package com.zhilai.update.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.widget.Toast;
 
@@ -13,25 +14,29 @@ public class ToastUtil {
 
     private static Toast toast = null;
 
+    @SuppressLint("ShowToast")
     public static void setToastMsg(Context mContext, String msg) {
-        if (toast != null) {
-            toast.setText(msg);
-            toast.setDuration(Toast.LENGTH_SHORT);
-        } else {
-            toast = Toast.makeText(mContext, msg, Toast.LENGTH_SHORT);
+        if (mContext == null) {
+            return;
         }
+        L.d(TAG, "toast====" + toast);
+        if (toast != null) {
+            toast.cancel();
+        }
+        toast = Toast.makeText(mContext, msg, Toast.LENGTH_SHORT);
         toast.show();
     }
 
+    @SuppressLint("ShowToast")
     public static void setToastMsg(Context mContext, int id) {
+        if (mContext == null) {
+            return;
+        }
         String msg = mContext.getResources().getString(id);
         if (toast != null) {
-            toast.setText(msg);
-            toast.setDuration(Toast.LENGTH_SHORT);
-        } else {
-            toast = Toast.makeText(mContext, msg, Toast.LENGTH_SHORT);
+            toast.cancel();
         }
+        toast = Toast.makeText(mContext, msg, Toast.LENGTH_SHORT);
         toast.show();
     }
-
 }

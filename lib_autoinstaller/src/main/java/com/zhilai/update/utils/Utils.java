@@ -42,14 +42,15 @@ public class Utils {
      */
     public static String getCachePath(Context context) {
         String cachePath;
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
-                || !Environment.isExternalStorageRemovable()) {
-            /**获取缓存路径:/sdcard/Android/data/<application package>/cache  */
-            cachePath = context.getExternalCacheDir().getPath() + File.separator + "apk";
-        } else {
-            /**获取缓存路径:/data/data/<application package>/cache   */
-            cachePath = context.getCacheDir().getPath() + File.separator + "apk";
-        }
+//        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
+//                || !Environment.isExternalStorageRemovable()) {
+//            /**获取缓存路径:/sdcard/Android/data/<application package>/cache  */
+//            cachePath = context.getExternalCacheDir().getPath() + File.separator + "apk";
+//        } else {
+//            /**获取缓存路径:/data/data/<application package>/cache   */
+//            cachePath = context.getCacheDir().getPath() + File.separator + "apk";
+//        }
+        cachePath = ("sdcard/" + context.getString(context.getApplicationInfo().labelRes)) + "/apk/";
         Log.d(TAG, "cachePath======" + cachePath);
         return cachePath;
     }

@@ -14,12 +14,14 @@ import com.zhilai.update.network.UpdateAppBuilder;
 import com.zhilai.update.utils.BsPatchUtils;
 import com.zhilai.update.utils.CommandUtil;
 import com.zhilai.update.utils.L;
+import com.zhilai.update.utils.ToastUtil;
 import com.zhilai.update.utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
@@ -192,55 +194,100 @@ public class AutoInstaller extends Handler {
 //        return true;
 //    }
 
+//    /**
+//     * 系统签名安装
+//     *
+//     * @param filePath 安装包路径
+//     */
+//    private void installSystemSign(String filePath) {
+//        if (TextUtils.isEmpty(filePath)) {
+//            throw new IllegalArgumentException("Please check apk file path!");
+//        }
+//
+//        String[] commands = new String[3];
+//
+//        commands[1] = "sleep 10";
+//
+//        Intent launchIntent = Utils.getLaunchIntent(mContext);
+//        if (launchIntent != null) {
+//            commands[2] = "am start -n " + launchIntent.getPackage()
+//                    + "/" + launchIntent.getComponent().getClassName();
+//        }
+//
+//        CommandUtil.debug("Build.VERSION.SDK_INT = " + Build.VERSION.SDK_INT);
+//
+//        if (Build.VERSION.SDK_INT >= 24) {
+//            if (Looper.myLooper() != Looper.getMainLooper()) {
+//                throw new IllegalArgumentException("Please call in main thread");
+//            }
+//            //android7.0以上使用以下命令行，且只能在主线程调用安装
+//            StringBuilder sb = new StringBuilder();
+//            sb.append("pm install ");
+//            sb.append(" -r ");
+//            sb.append(" -i ");
+//            sb.append(mContext.getPackageName());
+//            sb.append(" --user 0 ");
+//            sb.append(" ");
+//            sb.append(filePath);
+//            commands[0] = sb.toString();
+//
+//            CommandUtil.execute(commands[0]);
+//
+//        } else {
+//            commands[0] = "pm install -r " + filePath;
+//            boolean result = false;
+//            //只安装,目前不支持安装后启动应用
+//            List<String> msgList = CommandUtil.execute(commands[0]);
+//            if (msgList.size() > 0 && !msgList.get(0).toLowerCase().contains("Failure")) {
+//                result = true;
+//            }
+//        }
+//        CommandUtil.debug("installSystemSign commands = " + Arrays.asList(commands));
+//    }
+
     /**
      * 系统签名安装
      *
-     * @param filePath
+     * @param filePath 安装包路径
+     *                 这里的“r”指的是“replace”，替换原来的应用；“-d”指的是“downgrade”，降级安装
      */
-    private void installSystemSign(String filePath) {
-        if (TextUtils.isEmpty(filePath)) {
-            throw new IllegalArgumentException("Please check apk file path!");
-        }
-
-        String[] commands = new String[3];
-
-        commands[1] = "sleep 10";
-
-        Intent launchIntent = Utils.getLaunchIntent(mContext);
-        if (launchIntent != null) {
-            commands[2] = "am start -n " + launchIntent.getPackage()
-                    + "/" + launchIntent.getComponent().getClassName();
-        }
-
-        CommandUtil.debug("Build.VERSION.SDK_INT = " + Build.VERSION.SDK_INT);
-
-        if (Build.VERSION.SDK_INT >= 24) {
-            if (Looper.myLooper() != Looper.getMainLooper()) {
-                throw new IllegalArgumentException("Please call in main thread");
-            }
-            //android7.0以上使用以下命令行，且只能在主线程调用安装
-            StringBuilder sb = new StringBuilder();
-            sb.append("pm install ");
-            sb.append(" -r ");
-            sb.append(" -i ");
-            sb.append(mContext.getPackageName());
-            sb.append(" --user 0 ");
-            sb.append(" ");
-            sb.append(filePath);
-            commands[0] = sb.toString();
-
-            CommandUtil.execute(commands[0]);
-
+    public void installSystemSign(String filePath) {
+        String cmd = "";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            cmd = "pm install -r -d " + filePath;
         } else {
-            commands[0] = "pm install -r " + filePath;
-            boolean result = false;
-            //只安装,目前不支持安装后启动应用
-            List<String> msgList = CommandUtil.execute(commands[0]);
-            if (msgList.size() > 0 && !msgList.get(0).toLowerCase().contains("Failure")) {
-                result = true;
-            }
+            cmd = "pm install -r -d -i packageName --user 0 " + filePath;
         }
-        CommandUtil.debug("installSystemSign commands = " + Arrays.asList(commands));
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            Process process = runtime.exec(cmd);
+            InputStream errorInput = process.getErrorStream();
+            InputStream inputStream = process.getInputStream();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuilder error = new StringBuilder();
+            StringBuilder result = new StringBuilder();
+            String line = "";
+            while ((line = bufferedReader.readLine()) != null) {
+                result.append(line);
+            }
+            bufferedReader = new BufferedReader(new InputStreamReader(errorInput));
+            while ((line = bufferedReader.readLine()) != null) {
+                error.append(line);
+            }
+            if (result.toString().equals("Success")) {
+                if (mContext != null) {
+                    ToastUtil.setToastMsg(mContext, "安装成功");
+                }
+                Log.i(TAG, "install: Success");
+            } else {
+                if (mContext != null) {
+                    ToastUtil.setToastMsg(mContext, "安装失败");
+                }
+                Log.i(TAG, "install: error" + error);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 //    /**
@@ -374,12 +421,15 @@ public class AutoInstaller extends Handler {
 //        new Thread(new Runnable() {
 //            @Override
 //            public void run() {
-                installType(filePath);
+        installType(filePath);
 //            }
 //        }).start();
     }
 
     private void installType(String filePath) {
+        if (mContext == null) {
+            return;
+        }
         L.d(TAG, "filePath==000==" + filePath);
         // /storage/emulated/0/Android/data/com.zhilai.silentupgrade/cache/apk/old.apk
 
@@ -466,7 +516,7 @@ public class AutoInstaller extends Handler {
             case 5:
                 String errorMsg = (String) msg.obj;
                 if (TextUtils.isEmpty(errorMsg) && mContext != null) {
-                    Toast.makeText(mContext, errorMsg, Toast.LENGTH_SHORT).show();
+                    ToastUtil.setToastMsg(mContext, errorMsg);
                 }
                 break;
         }
