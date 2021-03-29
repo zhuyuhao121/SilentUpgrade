@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">静默升级</string>
+    <string name="app_name">升级组件</string>
     <string name="app_up_data">正在更新...</string>
     <string name="cancel">取消</string>
     <string name="ok">确定</string>

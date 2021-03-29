@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.huawei.agconnect'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
     defaultConfig {
         applicationId "com.zhilai.silentupgrade"
-//        applicationId "com.zhilai.xiaozhi"
-        minSdkVersion 15
-        targetSdkVersion 28
+        minSdkVersion 19
+        targetSdkVersion 30
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0.210319"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -17,14 +17,79 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    signingConfigs {
+
+        a9_debug {
+            storeFile file("../a9_sign_debug.jks")
+            storePassword '123456'
+            keyAlias 'a9_sign'
+            keyPassword '123456'
+        }
+
+        a9_release {
+            storeFile file("../a9_sign_release.jks")
+            storePassword '123456'
+            keyAlias 'a9_sign'
+            keyPassword '123456'
+        }
+
+        a3288_sign {
+            storeFile file("../rk3288_rk3399_sign.jks")
+            storePassword '123456'
+            keyAlias 'rk3399_sign'
+            keyPassword '123456'
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+
+            if (ZL_BUILD_SYS_SIGN.toBoolean()) {
+                manifest.srcFile 'src/main/java/signsys/AndroidManifest.xml'
+            } else {
+                manifest.srcFile 'src/main/AndroidManifest.xml'
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            minifyEnabled false
+
+            if (ZL_BUILD_A9.toBoolean()) {
+                signingConfig signingConfigs.a9_debug
+            } else {
+                signingConfig signingConfigs.a3288_sign
+            }
+            buildConfigField "boolean", "ZL_BUILD_SYS_SIGN", ZL_BUILD_SYS_SIGN
+        }
+
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            if (ZL_BUILD_A9.toBoolean()) {
+                signingConfig signingConfigs.a9_release
+            } else {
+                signingConfig signingConfigs.a3288_sign
+            }
+            buildConfigField "boolean", "ZL_BUILD_SYS_SIGN", ZL_BUILD_SYS_SIGN
+        }
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    testImplementation 'junit:junit:4.13.1'
+//    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    testImplementation 'junit:junit:4.13.2'
     implementation 'com.android.support.test:runner:1.0.2'
 
     implementation project(':lib_autoinstaller')
 //    implementation 'com.zhilai.update:silentupgrade:1.0.5'
+
+    implementation 'com.huawei.hms:scan:1.2.4.300'
 }
